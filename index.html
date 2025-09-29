@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NecroTranscribe - Transcripción GRATUITA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #27ae60;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --gray: #95a5a6;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 100%;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .card-title {
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card-title i {
+            margin-right: 10px;
+            color: var(--secondary);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 20px;
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            margin: 5px 0;
+            width: 100%;
+        }
+        
+        .btn:hover:not(:disabled) {
+            background-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            background-color: var(--gray);
+            cursor: not-allowed;
+        }
+        
+        .btn-record {
+            background-color: var(--accent);
+        }
+        
+        .btn-record.recording {
+            animation: pulse 1.5s infinite;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            margin: 2px;
+        }
+        
+        .transcription-result {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--secondary);
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 0 5px 5px 0;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            line-height: 1.8;
+        }
+        
+        .section-selector {
+            display: flex;
+            overflow-x: auto;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+        }
+        
+        .section-btn {
+            flex: 0 0 auto;
+            padding: 8px 15px;
+            background-color: #e8e8e8;
+            border-radius: 20px;
+            margin-right: 10px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        
+        .section-btn.active {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .medical-terms {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .term-tag {
+            padding: 5px 10px;
+            background-color: #e3f2fd;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            color: var(--primary);
+            cursor: pointer;
+        }
+        
+        .export-options {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        
+        .export-btn {
+            flex: 1;
+            background-color: var(--primary);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--gray);
+            margin-right: 8px;
+        }
+        
+        .status-dot.recording {
+            background-color: var(--accent);
+            animation: blink 1s infinite;
+        }
+        
+        .status-dot.listening {
+            background-color: var(--success);
+        }
+        
+        .recording-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .browser-support {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+        }
+        
+        .recording-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .recording-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .recording-number {
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .recording-section {
+            background: var(--secondary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+        
+        .recording-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 5px;
+        }
+        
+        .recording-content {
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+        
+        .current-section {
+            background: #e8f5e8;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid var(--success);
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        @media (min-width: 768px) {
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+            }
+            
+            .btn {
+                width: auto;
+            }
+            
+            .recording-options {
+                flex-direction: row;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>NecroTranscribe</h1>
+            <p class="subtitle">Transcripción GRATUITA - Grabaciones enumeradas</p>
+        </header>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <i class="fas fa-microphone"></i> Transcripción por Voz
+            </h2>
+            
+            <div class="browser-support">
+                <i class="fas fa-info-circle"></i> 
+                <strong>Funciona en:</strong> Chrome, Edge, Safari (iOS 14.5+)
+            </div>
+            
+            <div class="current-section" id="currentSection">
+                <strong>Sección actual:</strong> <span id="currentSectionText">Hallazgos externos</span>
+            </div>
+            
+            <div class="recording-options">
+                <button class="btn btn-record" id="recordButton">
+                    <i class="fas fa-microphone"></i> Iniciar Transcripción
+                </button>
+                
+                <button class="btn" id="stopButton" disabled>
+                    <i class="fas fa-stop"></i> Detener
+                </button>
+                
+                <button class="btn" id="newRecordingBtn">
+                    <i class="fas fa-plus"></i> Nueva Grabación
+                </button>
+            </div>
+            
+            <div class="status-indicator">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">Selecciona sección y haz clic en "Iniciar Transcripción"</span>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <i class="fas fa-file-medical"></i> Sección de Necropsia
+            </h2>
+            <div class="section-selector">
+                <div class="section-btn active" data-section="Hallazgos externos">Hallazgos externos</div>
+                <div class="section-btn" data-section="Hallazgos internos">Hallazgos internos</div>
+                <div class="section-btn" data-section="Cabeza y cuello">Cabeza y cuello</div>
+                <div class="section-btn" data-section="Tórax">Tórax</div>
+                <div class="section-btn" data-section="Abdomen">Abdomen</div>
+                <div class="section-btn" data-section="Extremidades">Extremidades</div>
+                <div class="section-btn" data-section="Conclusiones">Conclusiones</div>
+            </div>
+            
+            <div class="medical-terms">
+                <span class="term-tag">Equimosis</span>
+                <span class="term-tag">Hematoma</span>
+                <span class="term-tag">Livideces</span>
+                <span class="term-tag">Rigidez cadavérica</span>
+                <span class="term-tag">Petequias</span>
+                <span class="term-tag">Contusión</span>
+                <span class="term-tag">Edema</span>
+                <span class="term-tag">Cianosis</span>
+                <span class="term-tag">Hepatomegalia</span>
+                <span class="term-tag">Esplenomegalia</span>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <i class="fas fa-file-alt"></i> Transcripciones Enumeradas
+            </h2>
+            <div class="transcription-result" id="transcriptionResult">
+                <p style="color: #7f8c8d; text-align: center; padding: 40px 0;">
+                    Tus grabaciones aparecerán aquí enumeradas...<br>
+                    <span style="font-size: 0.9rem;">Cada grabación se guarda con número y sección</span>
+                </p>
+            </div>
+            <button class="btn" id="clearAllBtn" style="background-color: #e74c3c;">
+                <i class="fas fa-trash"></i> Limpiar Todas
+            </button>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <i class="fas fa-file-export"></i> Exportar Informe Completo
+            </h2>
+            <div class="export-options">
+                <button class="btn export-btn" id="exportWord">
+                    <i class="fas fa-file-word"></i> Descargar Word
+                </button>
+                <button class="btn export-btn" id="exportPDF">
+                    <i class="fas fa-file-pdf"></i> Descargar PDF
+                </button>
+                <button class="btn export-btn" id="copyText">
+                    <i class="fas fa-copy"></i> Copiar Todo
+                </button>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Desarrollado para médicos forenses de Colombia</p>
+            <p>Transcripción 100% GRATUITA - Grabaciones enumeradas</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const recordButton = document.getElementById('recordButton');
+            const stopButton = document.getElementById('stopButton');
+            const newRecordingBtn = document.getElementById('newRecordingBtn');
+            const transcriptionResult = document.getElementById('transcriptionResult');
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            const exportWord = document.getElementById('exportWord');
+            const exportPDF = document.getElementById('exportPDF');
+            const copyText = document.getElementById('copyText');
+            const clearAllBtn = document.getElementById('clearAllBtn');
+            const currentSectionText = document.getElementById('currentSectionText');
+
+            let recognition;
+            let isRecording = false;
+            let recordingCount = 0;
+            let currentSection = "Hallazgos externos";
+            let currentTranscript = "";
+            let allRecordings = [];
+
+            // Verificar compatibilidad del navegador
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                statusText.textContent = '❌ Tu navegador no soporta transcripción por voz. Usa Chrome, Edge o Safari.';
+                recordButton.disabled = true;
+                newRecordingBtn.disabled = true;
+                return;
+            }
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            
+            // Configurar reconocimiento
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'es-ES';
+
+            recognition.onstart = function() {
+                isRecording = true;
+                recordButton.disabled = true;
+                stopButton.disabled = false;
+                newRecordingBtn.disabled = true;
+                statusText.textContent = '🎤 Grabando... Habla ahora';
+                statusDot.className = 'status-dot recording';
+            };
+
+            recognition.onresult = function(event) {
+                let finalTranscript = '';
+                let interimTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript;
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+
+                // Actualizar transcripción actual
+                if (finalTranscript) {
+                    currentTranscript = finalTranscript;
+                    updateCurrentRecordingDisplay();
+                } else if (interimTranscript) {
+                    currentTranscript = interimTranscript;
+                    updateCurrentRecordingDisplay();
+                }
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Error en reconocimiento:', event.error);
+                statusText.textContent = 'Error: ' + event.error;
+                statusDot.className = 'status-dot error';
+                resetRecording();
+            };
+
+            recognition.onend = function() {
+                if (isRecording) {
+                    // Reconectar automáticamente si aún está grabando
+                    recognition.start();
+                }
+            };
+
+            // Iniciar grabación
+            recordButton.addEventListener('click', function() {
+                try {
+                    currentTranscript = "";
+                    recognition.start();
+                } catch (error) {
+                    statusText.textContent = 'Error al iniciar: ' + error.message;
+                }
+            });
+
+            // Detener grabación y GUARDAR
+            stopButton.addEventListener('click', function() {
+                if (currentTranscript.trim()) {
+                    saveRecording();
+                }
+                resetRecording();
+                statusText.textContent = 'Grabación guardada ✅';
+                statusDot.className = 'status-dot';
+            });
+
+            // Nueva grabación (sin guardar la actual)
+            newRecordingBtn.addEventListener('click', function() {
+                if (isRecording) {
+                    recognition.stop();
+                }
+                currentTranscript = "";
+                resetRecording();
+                statusText.textContent = 'Preparado para nueva grabación';
+            });
+
+            function resetRecording() {
+                isRecording = false;
+                recognition.stop();
+                recordButton.disabled = false;
+                stopButton.disabled = true;
+                newRecordingBtn.disabled = false;
+            }
+
+            function saveRecording() {
+                recordingCount++;
+                const recording = {
+                    number: recordingCount,
+                    section: currentSection,
+                    content: currentTranscript,
+                    timestamp: new Date().toLocaleTimeString()
+                };
+                
+                allRecordings.push(recording);
+                displayAllRecordings();
+            }
+
+            function updateCurrentRecordingDisplay() {
+                // Solo actualiza la visualización de la grabación actual
+                // sin afectar las grabaciones guardadas
+            }
+
+            function displayAllRecordings() {
+                if (allRecordings.length === 0) {
+                    transcriptionResult.innerHTML = '<p style="color: #7f8c8d; text-align: center; padding: 40px 0;">Tus grabaciones aparecerán aquí enumeradas...</p>';
+                    return;
+                }
+
+                let html = '';
+                allRecordings.forEach(recording => {
+                    html += `
+                        <div class="recording-item">
+                            <div class="recording-header">
+                                <div style="display: flex; align-items: center;">
+                                    <span class="recording-number">Grabación ${recording.number}</span>
+                                    <span class="recording-section">${recording.section}</span>
+                                    <small style="margin-left: 10px; color: #666;">${recording.timestamp}</small>
+                                </div>
+                                <div class="recording-actions">
+                                    <button class="btn-small" onclick="deleteRecording(${recording.number})" style="background: #e74c3c;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="recording-content">
+                                ${recording.content}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                transcriptionResult.innerHTML = html;
+            }
+
+            // Cambiar sección
+            document.querySelectorAll('.section-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    document.querySelectorAll('.section-btn').forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    currentSection = this.dataset.section;
+                    currentSectionText.textContent = currentSection;
+                });
+            });
+
+            // Exportar a Word
+            exportWord.addEventListener('click', function() {
+                if (allRecordings.length === 0) {
+                    alert('No hay grabaciones para exportar');
+                    return;
+                }
+
+                let content = 'INFORME DE NECROPSIA\n\n';
+                allRecordings.forEach(recording => {
+                    content += `GRABACIÓN ${recording.number} (${recording.section}) - ${recording.timestamp}\n`;
+                    content += `${recording.content}\n\n`;
+                });
+
+                const blob = new Blob([content], { type: 'application/msword' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'informe_necropsia_' + new Date().toISOString().split('T')[0] + '.doc';
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                statusText.textContent = '📄 Informe Word descargado';
+            });
+
+            // Copiar todo el texto
+            copyText.addEventListener('click', function() {
+                if (allRecordings.length === 0) {
+                    alert('No hay grabaciones para copiar');
+                    return;
+                }
+
+                let content = '';
+                allRecordings.forEach(recording => {
+                    content += `Grabación ${recording.number} (${recording.section}): ${recording.content}\n\n`;
+                });
+
+                navigator.clipboard.writeText(content).then(function() {
+                    statusText.textContent = '✅ Todas las grabaciones copiadas';
+                });
+            });
+
+            // Limpiar todas las grabaciones
+            clearAllBtn.addEventListener('click', function() {
+                if (confirm('¿Estás seguro de que quieres eliminar todas las grabaciones?')) {
+                    allRecordings = [];
+                    recordingCount = 0;
+                    displayAllRecordings();
+                    statusText.textContent = 'Todas las grabaciones eliminadas';
+                }
+            });
+
+            // Función global para eliminar grabaciones
+            window.deleteRecording = function(recordingNumber) {
+                allRecordings = allRecordings.filter(rec => rec.number !== recordingNumber);
+                displayAllRecordings();
+                statusText.textContent = 'Grabación eliminada';
+            };
+
+            // Agregar términos médicos al hacer clic
+            document.querySelectorAll('.term-tag').forEach(tag => {
+                tag.addEventListener('click', function() {
+                    const term = this.textContent;
+                    if (isRecording) {
+                        currentTranscript += ' ' + term;
+                        updateCurrentRecordingDisplay();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
